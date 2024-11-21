@@ -4,7 +4,7 @@ defmodule ElixirXtdbWeb.LightLive do
   # mount
   def mount(_params, _session, socket) do
     # Fetch XTDB data
-    socket = assign(socket, brightness: 10)
+    socket = assign(socket, form: %{})
 
     socket =
       assign(socket,
@@ -28,16 +28,34 @@ defmodule ElixirXtdbWeb.LightLive do
     <h1>Front Porch light</h1>
 
     <div class="slidecontainer">
-      <form phx-change="update_date">
-        <input type="range" min="1" max={"#{length(@trades)}"} value="1" id="trades-timeline" />
-      </form>
+      <.form for={@form} phx-change="update_rate">
+        <.input
+          type="range"
+          name="slider"
+          min="1"
+          max={"#{length(@trades)}"}
+          value="1"
+          id="trades-timeline"
+        />
+        <button>Save</button>
+      </.form>
+    </div>
+    <div>
+      <%= for %{value: value} <- @trades do %>
+        <div>
+          <span><%= value %></span>
+        </div>
+      <% end %>
     </div>
     """
   end
 
   # handle_events
-  def handle_event("update_date", payload, socket) do
-    # IO.puts(payload)
-    {:noreply, assign(socket, brightness: 0)}
+  def handle_event("update_date", _payload, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("update_date", socket) do
+    {:noreply, socket}
   end
 end
