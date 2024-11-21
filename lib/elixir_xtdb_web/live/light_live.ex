@@ -4,7 +4,7 @@ defmodule ElixirXtdbWeb.LightLive do
   # mount
   def mount(_params, _session, socket) do
     # Fetch XTDB data
-    socket = assign(socket, form: %{})
+    socket = assign(socket, form: to_form(%{"slider" => 1}))
 
     socket =
       assign(socket,
@@ -34,12 +34,13 @@ defmodule ElixirXtdbWeb.LightLive do
           name="slider"
           min="1"
           max={"#{length(@trades)}"}
-          value="1"
+          value={"#{Map.fetch(@form, :slider)}"}
           id="trades-timeline"
         />
         <button>Save</button>
       </.form>
     </div>
+
     <div>
       <%= for %{value: value} <- @trades do %>
         <div>
