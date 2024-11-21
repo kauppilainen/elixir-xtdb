@@ -52,11 +52,9 @@ defmodule ElixirXtdbWeb.LightLive do
   end
 
   # handle_events
-  def handle_event("update_date", _payload, socket) do
-    {:noreply, socket}
+  def handle_event("update_rate", %{"slider" => v}, socket) do
+    form = to_form(%{"slider" => v})
+    {:noreply, assign(socket, form: form)}
   end
 
-  def handle_event("update_date", socket) do
-    {:noreply, socket}
-  end
 end
