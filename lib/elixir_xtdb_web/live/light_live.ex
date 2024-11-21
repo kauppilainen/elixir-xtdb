@@ -3,8 +3,11 @@ defmodule ElixirXtdbWeb.LightLive do
 
   # mount
   def mount(_params, _session, socket) do
+    # Fetch XTDB data
     socket = assign(socket, brightness: 10)
-    socket = assign(socket, id: "12345")
+    socket = assign(socket, trades: [%{:_id => 1, :value => 10},
+                                     %{:_id => 2, :value => 20}
+                                    ])
     {:ok, socket}
   end
 
@@ -13,7 +16,12 @@ defmodule ElixirXtdbWeb.LightLive do
     # HEEx = HTML + EEx
     # phx-click is a binding
     ~H"""
-    <h1>Front Porch light (<%= assigns.id%>)</h1>
+    <h1>Front Porch light</h1>
+
+    <div class="slidecontainer">
+      <input type="range" min="1" max={"#{length(@trades)}"} value="1" id="trades-timeline">
+    </div>
+
     <div class="w-full my-4">
       <div style={"width: #{@brightness}%; background: green"}>
         <%= assigns.brightness %>%
