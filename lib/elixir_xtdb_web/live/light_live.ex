@@ -5,9 +5,18 @@ defmodule ElixirXtdbWeb.LightLive do
   def mount(_params, _session, socket) do
     # Fetch XTDB data
     socket = assign(socket, brightness: 10)
-    socket = assign(socket, trades: [%{:_id => 1, :value => 10},
-                                     %{:_id => 2, :value => 20}
-                                    ])
+
+    socket =
+      assign(socket,
+        trades: [
+          %{:_id => 1, :value => 10},
+          %{:_id => 2, :value => 20},
+          %{:_id => 3, :value => 30},
+          %{:_id => 4, :value => 40},
+          %{:_id => 5, :value => 50}
+        ]
+      )
+
     {:ok, socket}
   end
 
@@ -19,40 +28,16 @@ defmodule ElixirXtdbWeb.LightLive do
     <h1>Front Porch light</h1>
 
     <div class="slidecontainer">
-      <input type="range" min="1" max={"#{length(@trades)}"} value="1" id="trades-timeline">
+      <form phx-change="update_date">
+        <input type="range" min="1" max={"#{length(@trades)}"} value="1" id="trades-timeline" />
+      </form>
     </div>
-
-    <div class="w-full my-4">
-      <div style={"width: #{@brightness}%; background: green"}>
-        <%= assigns.brightness %>%
-      </div>
-    </div>
-    <div class="w-full flex justify-around">
-      <button phx-click="off">Light off</button>
-      <button phx-click="decr">-</button>
-      <button phx-click="inc">+</button>
-      <button phx-click="on">Light on</button>
-      </div>
     """
   end
 
   # handle_events
-  def handle_event("on", _payload, socket) do
-    {:noreply, assign(socket, brightness: 100)}
-  end
-
-  def handle_event("inc", _payload, socket) do
-    socket = update(socket, :brightness, &(&1 + 10))
-    {:noreply, socket}
-  end
-
-  def handle_event("decr", _payload, socket) do
-    socket = update(socket, :brightness, &(&1 - 10))
-    {:noreply, socket}
-  end
-
-  def handle_event("off", _payload, socket) do
+  def handle_event("update_date", payload, socket) do
+    # IO.puts(payload)
     {:noreply, assign(socket, brightness: 0)}
   end
-
 end
