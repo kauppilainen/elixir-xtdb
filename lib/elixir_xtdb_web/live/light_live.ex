@@ -1,14 +1,13 @@
 defmodule ElixirXtdbWeb.LightLive do
   use ElixirXtdbWeb, :live_view
 
-  # mount
   def mount(_params, _session, socket) do
     # Fetch XTDB data
-    socket = assign(socket, form: to_form(%{"slider" => 1}))
-
     # TODO fetch XTDB history here
     transactions = XTDB.get_transaction_history()
 
+    form_state = %{"slider" => length(transactions)}
+    socket = assign(socket, form: to_form(form_state))
     socket = assign(socket, transactions: transactions)
 
     # TODO fetch trades here
@@ -26,13 +25,14 @@ defmodule ElixirXtdbWeb.LightLive do
     {:ok, socket}
   end
 
-  # render
   def render(assigns) do
     # HEEx = HTML + EEx
     # phx-click is a binding
     ~H"""
     <h1 class="text-xl font-semibold">Timeline</h1>
-
+    <p>
+      <%= hd(Enum.at(@transactions, 2)) %>
+    </p>
     <div class="grid gap-4">
       <div class="pb-4">
         <.form for={@form} phx-change="update_rate">
@@ -42,7 +42,6 @@ defmodule ElixirXtdbWeb.LightLive do
             min="1"
             max={"#{length(@transactions)}"}
             value={"#{Map.fetch(@form, :slider)}"}
-            id="trades-timeline"
           />
           <div class="pt-2">
             <button class="bg-blue-500 hover:bg-blue-700 text-sm text-white font-semibold py-1 px-2 rounded">
@@ -56,7 +55,7 @@ defmodule ElixirXtdbWeb.LightLive do
         <h2 class="text-xl font-semibold">Trades</h2>
         <%= for %{_id: id, value: value} <- @trades do %>
           <div>
-            <span><%= id %>: <%= value%></span>
+            <span><%= id %>: <%= value %></span>
           </div>
         <% end %>
       </div>
@@ -64,7 +63,6 @@ defmodule ElixirXtdbWeb.LightLive do
     """
   end
 
-  # handle_events
   def handle_event("update_rate", %{"slider" => v}, socket) do
     form = to_form(%{"slider" => v})
     {:noreply, assign(socket, form: form)}
