@@ -54,9 +54,9 @@ defmodule ElixirXtdbWeb.LightLive do
 
       <div>
         <h2 class="text-xl font-semibold">Trades</h2>
-        <%= for [id, price] <- @transactions do %>
+        <%= for [id, price, validFrom] <- @transactions do %>
           <div>
-            <span><%= id %>: <%= price %></span>
+            <span><%= id %>: <%= price %>: <%= validFrom %></span>
           </div>
         <% end %>
       </div>

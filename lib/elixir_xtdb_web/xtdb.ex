@@ -15,7 +15,8 @@ defmodule XTDB do
     UPDATE trades SET price = 150 WHERE _id = 1;
     """
 
-    select_query = "SELECT * FROM trades"
+    select_query = "SELECT _id, price, _valid_from FROM trades"
+
     Postgrex.query(pid, insert_query, [])
     Postgrex.query(pid, update_query, [])
 
