@@ -28,10 +28,19 @@ defmodule ElixirXtdbWeb.LightLive do
   def render(assigns) do
     # HEEx = HTML + EEx
     # phx-click is a binding
+
     ~H"""
     <h1 class="text-xl font-semibold">Timeline</h1>
     <p>
-      <%= hd(Enum.at(@transactions, 2)) %>
+      <%= hd(
+        Enum.at(
+          assigns.transactions,
+          case Map.fetch(@form, :slider) do
+            {:ok, idx} -> idx
+            :error -> length(assigns.transactions) - 1
+          end
+        )
+      ) %>
     </p>
     <div class="grid gap-4">
       <div class="pb-4">
