@@ -43,7 +43,7 @@ defmodule ElixirXtdbWeb.LightLive do
           value={"#{Map.fetch(@form, :slider)}"}
           id="trades-timeline"
         />
-        <button>Save</button>
+        <button>Fetch state</button>
       </.form>
     </div>
 
