@@ -6,6 +6,12 @@ defmodule ElixirXtdbWeb.LightLive do
     # Fetch XTDB data
     socket = assign(socket, form: to_form(%{"slider" => 1}))
 
+    # TODO fetch XTDB history here
+    transactions = XTDB.connect_and_query()
+
+    socket = assign(socket, transactions: transactions)
+
+    # TODO fetch trades here
     socket =
       assign(socket,
         trades: [
@@ -25,7 +31,7 @@ defmodule ElixirXtdbWeb.LightLive do
     # HEEx = HTML + EEx
     # phx-click is a binding
     ~H"""
-    <h1>Front Porch light</h1>
+    <h1 class="text-xl font-semibold">Timeline</h1>
 
     <div class="slidecontainer">
       <.form for={@form} phx-change="update_rate">
@@ -48,6 +54,13 @@ defmodule ElixirXtdbWeb.LightLive do
         </div>
       <% end %>
     </div>
+    <div>
+      <%= for [id, price] <- @transactions do %>
+        <div>
+          <span><%= id %>: <%= price %></span>
+        </div>
+      <% end %>
+    </div>
     """
   end
 
@@ -56,5 +69,4 @@ defmodule ElixirXtdbWeb.LightLive do
     form = to_form(%{"slider" => v})
     {:noreply, assign(socket, form: form)}
   end
-
 end
