@@ -52,13 +52,3 @@ defmodule XTDB do
     Enum.each(rows, fn [id, price] -> IO.puts("  * #{id}: #{price}") end)
   end
 end
-
-"""
-Example output:
-
-iex(1)> XTDB.connect_and_query()
-Users:
-  * joe: Joe
-  * jms: James
-:ok
-"""
