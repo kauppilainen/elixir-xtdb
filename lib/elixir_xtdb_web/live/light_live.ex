@@ -33,33 +33,33 @@ defmodule ElixirXtdbWeb.LightLive do
     ~H"""
     <h1 class="text-xl font-semibold">Timeline</h1>
 
-    <div class="slidecontainer">
-      <.form for={@form} phx-change="update_rate">
-        <.input
-          type="range"
-          name="slider"
-          min="1"
-          max={"#{length(@trades)}"}
-          value={"#{Map.fetch(@form, :slider)}"}
-          id="trades-timeline"
-        />
-        <button>Fetch state</button>
-      </.form>
-    </div>
+    <div class="grid gap-4">
+      <div class="pb-4">
+        <.form for={@form} phx-change="update_rate">
+          <.input
+            type="range"
+            name="slider"
+            min="1"
+            max={"#{length(@trades)}"}
+            value={"#{Map.fetch(@form, :slider)}"}
+            id="trades-timeline"
+          />
+          <div class="pt-2">
+            <button class="bg-blue-500 hover:bg-blue-700 text-sm text-white font-semibold py-1 px-2 rounded">
+              Fetch state
+            </button>
+          </div>
+        </.form>
+      </div>
 
-    <div>
-      <%= for %{value: value} <- @trades do %>
-        <div>
-          <span><%= value %></span>
-        </div>
-      <% end %>
-    </div>
-    <div>
-      <%= for [id, price] <- @transactions do %>
-        <div>
-          <span><%= id %>: <%= price %></span>
-        </div>
-      <% end %>
+      <div>
+        <h2 class="text-xl font-semibold">Trades</h2>
+        <%= for [id, price] <- @transactions do %>
+          <div>
+            <span><%= id %>: <%= price %></span>
+          </div>
+        <% end %>
+      </div>
     </div>
     """
   end
