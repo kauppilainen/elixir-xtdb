@@ -7,7 +7,7 @@ defmodule ElixirXtdbWeb.LightLive do
     socket = assign(socket, form: to_form(%{"slider" => 1}))
 
     # TODO fetch XTDB history here
-    transactions = XTDB.connect_and_query()
+    transactions = XTDB.get_transaction_history()
 
     socket = assign(socket, transactions: transactions)
 
@@ -40,7 +40,7 @@ defmodule ElixirXtdbWeb.LightLive do
             type="range"
             name="slider"
             min="1"
-            max={"#{length(@trades)}"}
+            max={"#{length(@transactions)}"}
             value={"#{Map.fetch(@form, :slider)}"}
             id="trades-timeline"
           />
@@ -54,9 +54,9 @@ defmodule ElixirXtdbWeb.LightLive do
 
       <div>
         <h2 class="text-xl font-semibold">Trades</h2>
-        <%= for [id, price, validFrom] <- @transactions do %>
+        <%= for %{_id: id, value: value} <- @trades do %>
           <div>
-            <span><%= id %>: <%= price %>: <%= validFrom %></span>
+            <span><%= id %>: <%= value%></span>
           </div>
         <% end %>
       </div>

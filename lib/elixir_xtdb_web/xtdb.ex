@@ -25,6 +25,21 @@ defmodule XTDB do
     rows
   end
 
+  def get_transaction_history do
+    {:ok, pid} =
+      Postgrex.start_link(
+        hostname: "localhost",
+        port: 5432,
+        database: "xtdb"
+      )
+
+    select_query = "SELECT system_time FROM xt.txs ORDER BY system_time ASC"
+
+    {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
+
+    rows
+  end
+
   def populate do
     {:ok, pid} =
       Postgrex.start_link(
