@@ -1,52 +1,29 @@
 defmodule XTDB do
-  def connect_and_query do
-    {:ok, pid} =
-      Postgrex.start_link(
-        hostname: "localhost",
-        port: 5432,
-        database: "xtdb"
-      )
+  @db_opts [
+    hostname: "localhost",
+    port: 5432,
+    database: "xtdb"
+  ]
 
-    insert_query = """
-    INSERT INTO trades (_id, price) VALUES (1, 100);
-    """
-
-    update_query = """
-    UPDATE trades SET price = 150 WHERE _id = 1;
-    """
-
-    select_query = "SELECT _id, price, _valid_from FROM trades"
-
-    Postgrex.query(pid, insert_query, [])
-    Postgrex.query(pid, update_query, [])
-
-    {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
-
-    rows
+  def get_trades do
+    with {:ok, pid} <- Postgrex.start_link(@db_opts),
+         {:ok, %Postgrex.Result{rows: rows}} <-
+           Postgrex.query(pid, "SELECT _id, price FROM trades", []) do
+      Enum.map(rows, fn [id, price] -> %{_id: id, value: price} end)
+    end
   end
 
   def get_transaction_history do
-    {:ok, pid} =
-      Postgrex.start_link(
-        hostname: "localhost",
-        port: 5432,
-        database: "xtdb"
-      )
-
-    select_query = "SELECT system_time FROM xt.txs ORDER BY system_time ASC"
-
-    {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
-
-    rows
+    with {:ok, pid} <- Postgrex.start_link(@db_opts),
+         {:ok, %Postgrex.Result{rows: rows}} <-
+           Postgrex.query(pid, "SELECT system_time FROM xt.txs ORDER BY system_time ASC", []) do
+      rows
+    end
   end
 
   def populate do
     {:ok, pid} =
-      Postgrex.start_link(
-        hostname: "localhost",
-        port: 5432,
-        database: "xtdb"
-      )
+      Postgrex.start_link(@db_opts)
 
     trades = Enum.map(1..100, fn id -> "(#{id}, #{id * 2})" end)
 
