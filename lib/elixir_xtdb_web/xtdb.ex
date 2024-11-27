@@ -22,23 +22,18 @@ defmodule XTDB do
   end
 
   def populate do
-    {:ok, pid} =
-      Postgrex.start_link(@db_opts)
+    {:ok, pid} = Postgrex.start_link(@db_opts)
 
-    trades = Enum.map(1..100, fn id -> "(#{id}, #{id * 2})" end)
+    trades = Enum.map(1..100, fn id -> {id, id * 2} end)
 
-    insert_query =
-      "INSERT INTO trades (_id, price) VALUES " <>
-        Enum.join(
-          Enum.intersperse(
-            trades,
-            ","
-          )
-        )
+    Enum.each(trades, fn {id, price} ->
+      {:ok, _} = Postgrex.query(pid, "BEGIN", [])
+      {:ok, _} =
+        Postgrex.query(pid, "INSERT INTO trades (_id, price) VALUES (#{id}, #{price})", [])
+      {:ok, _} = Postgrex.query(pid, "COMMIT", [])
+    end)
 
     select_query = "SELECT * FROM trades"
-    IO.puts(insert_query)
-    Postgrex.query(pid, insert_query, [])
     {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
 
     IO.puts("Trades:")
