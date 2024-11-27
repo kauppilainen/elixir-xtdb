@@ -49,7 +49,7 @@ defmodule ElixirXtdbWeb.LightLive do
         Current timestamp: <%= @current_timestamp %>
       </div>
 
-      <.form for={@form} phx-change="update_rate" class="space-y-4">
+      <.form for={@form} phx-change="update_as_of_timestamp" class="space-y-4">
         <.input type="range" name="slider" min="1" max={length(@transactions)} value={@index} />
 
         <.button phx-click="fetch_state" class="bg-blue-500 hover:bg-blue-700">
@@ -62,14 +62,27 @@ defmodule ElixirXtdbWeb.LightLive do
     """
   end
 
-  def handle_event("update_rate", %{"slider" => v}, socket) do
-    form = to_form(%{"slider" => v})
-    socket = assign(socket, form: form)
+  def handle_event("update_as_of_timestamp", %{"slider" => value}, socket) do
+    index = String.to_integer(value)
+    transactions = socket.assigns.transactions
 
+    socket =
+      socket
+      |> assign(:form, to_form(%{"slider" => value}))
+      |> assign(:index, index)
+      |> assign(:current_timestamp, get_current_timestamp(transactions, index))
+
+    {:noreply, socket}
+  end
+
+  def handle_event("fetch_state", _params, socket) do
     transactions = XTDB.get_transaction_history()
 
-    socket = assign(socket, index: v - 1)
-    socket = assign(socket, current_timestamp: hd(Enum.at(transactions, v - 1)))
+    socket =
+      socket
+      |> assign(:transactions, transactions)
+      |> assign(:current_timestamp, get_current_timestamp(transactions, socket.assigns.index))
+
     {:noreply, socket}
   end
 
@@ -79,5 +92,6 @@ defmodule ElixirXtdbWeb.LightLive do
     |> Enum.at(index - 1)
     |> hd()
   end
+
   defp get_current_timestamp(_, _), do: nil
 end
