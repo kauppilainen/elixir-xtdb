@@ -76,16 +76,18 @@ defmodule ElixirXtdbWeb.LightLive do
   end
 
   def handle_event("fetch_state", _params, socket) do
-    transactions = XTDB.get_transaction_history()
+    IO.inspect(socket.assigns.index, label: "Current index")
+    current_timestamp = get_current_timestamp(socket.assigns.transactions, socket.assigns.index)
+    trades = XTDB.get_trades(current_timestamp)
+    IO.inspect(trades, label: "Current trades")
+
 
     socket =
       socket
-      |> assign(:transactions, transactions)
-      |> assign(:current_timestamp, get_current_timestamp(transactions, socket.assigns.index))
+      |> assign(:trades, trades)
 
     {:noreply, socket}
   end
-
   # Add this function to ElixirXtdbWeb.LightLive
   defp get_current_timestamp(transactions, index) when length(transactions) > 0 do
     transactions
