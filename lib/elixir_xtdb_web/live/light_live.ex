@@ -3,21 +3,29 @@ defmodule ElixirXtdbWeb.LightLive do
 
   def mount(_params, _session, socket) do
     transactions = XTDB.get_transaction_history()
-    index = length(transactions)
-
+    index = length(transactions) - 1
     socket =
       socket
-      |> assign(:transactions, transactions)
-      |> assign(:form, to_form(%{"slider" => index}))
       |> assign(:index, index)
       |> assign(:current_timestamp, get_current_timestamp(transactions, index))
+      |> assign(:transactions, transactions)
       |> assign(:trades, XTDB.get_trades())
+      |> assign(:form, to_form(%{"slider" => index}))
 
     {:ok, socket}
   end
 
-  attr :trades, :list, required: true
+  attr :trade, :map, required: true
+  def trade(assigns) do
+    ~H"""
+    <div class="flex items-center gap-2">
+      <span class="font-medium"><%= @trade._id %>:</span>
+      <span><%= @trade.value %></span>
+    </div>
+    """
+  end
 
+  attr :trades, :list, required: true
   def trades_list(assigns) do
     ~H"""
     <div>
@@ -25,17 +33,6 @@ defmodule ElixirXtdbWeb.LightLive do
       <div class="space-y-2">
         <.trade :for={trade <- Enum.sort_by(@trades, & &1._id)} trade={trade} />
       </div>
-    </div>
-    """
-  end
-
-  attr :trade, :map, required: true
-
-  def trade(assigns) do
-    ~H"""
-    <div class="flex items-center gap-2">
-      <span class="font-medium"><%= @trade._id %>:</span>
-      <span><%= @trade.value %></span>
     </div>
     """
   end
@@ -65,9 +62,8 @@ defmodule ElixirXtdbWeb.LightLive do
   end
 
   def handle_event("update_as_of_timestamp", %{"slider" => value}, socket) do
-    index = String.to_integer(value)
+    index = String.to_integer(value) - 1
     transactions = socket.assigns.transactions
-
     socket =
       socket
       |> assign(:form, to_form(%{"slider" => value}))
@@ -78,14 +74,11 @@ defmodule ElixirXtdbWeb.LightLive do
   end
 
   def handle_event("fetch_state", _params, socket) do
-    IO.inspect(socket.assigns.index, label: "Current index")
-    current_timestamp = get_current_timestamp(socket.assigns.transactions, socket.assigns.index)
-    trades = XTDB.get_trades(current_timestamp)
+    IO.puts(socket.assigns.current_timestamp)
+    trades = XTDB.get_trades(socket.assigns.current_timestamp)
     IO.inspect(trades, label: "Current trades")
 
-    socket =
-      socket
-      |> assign(:trades, trades)
+    socket = assign(socket, :trades, trades)
 
     {:noreply, socket}
   end
@@ -99,9 +92,12 @@ defmodule ElixirXtdbWeb.LightLive do
   end
 
   defp get_current_timestamp(transactions, index) when length(transactions) > 0 do
-    transactions
-    |> Enum.at(index - 1)
-    |> hd()
+    case Enum.at(transactions, index) do
+      [timestamp | _] when not is_nil(timestamp) ->
+        DateTime.to_iso8601(timestamp)
+      _ ->
+        nil
+    end
   end
 
   defp get_current_timestamp(_, _), do: nil
