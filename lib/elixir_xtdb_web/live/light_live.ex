@@ -51,13 +51,17 @@ defmodule ElixirXtdbWeb.LightLive do
     ~H"""
     <div class="space-y-6">
       <h1 class="text-xl font-semibold">Timeline</h1>
-
-      <.modal :if={@show_edit_modal} id="edit-trade-modal" show on_cancel={JS.patch(~p"/")}>
+      <.modal :if={@show_edit_modal} id="edit-trade-modal" show on_cancel={JS.push("close_modal")}>
         <.form for={%{}} phx-submit="save_trade">
           <div class="space-y-4">
-            <input type="hidden" name="trade_id" value={@editing_trade._id}>
+            <input type="hidden" name="trade_id" value={@editing_trade._id} />
             <.input type="number" label="Price" name="price" value={@editing_trade.value} />
-            <.input type="datetime-local" label="Valid From" name="valid_from" value={@editing_trade.valid_from} />
+            <.input
+              type="datetime-local"
+              label="Valid From"
+              name="valid_from"
+              value={@editing_trade.valid_from}
+            />
             <.button type="submit">Save Changes</.button>
           </div>
         </.form>
@@ -137,6 +141,11 @@ defmodule ElixirXtdbWeb.LightLive do
       |> assign(:show_edit_modal, false)
       |> assign(:editing_trade, nil)
 
+    {:noreply, socket}
+  end
+
+  def handle_event("close_modal", _params, socket) do
+    socket = assign(socket, :show_edit_modal, false)
     {:noreply, socket}
   end
 
