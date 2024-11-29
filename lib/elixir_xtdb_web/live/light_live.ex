@@ -48,7 +48,7 @@ defmodule ElixirXtdbWeb.LightLive do
 
       <.form for={@form} phx-change="update_as_of_timestamp" class="space-y-4">
         <.input type="range" name="slider" min="1" max={length(@transactions)} value={@index + 1} />
-        <.button phx-click="fetch_state">
+        <.button type="button" phx-click="fetch_state">
           Fetch state
         </.button>
         <.button phx-click="populate">
