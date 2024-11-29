@@ -43,8 +43,7 @@ defmodule ElixirXtdbWeb.LightLive do
       <h1 class="text-xl font-semibold">Timeline</h1>
 
       <div class="text-sm text-gray-600">
-        Trades as of: <%= @current_timestamp %>
-      </div>
+        Trades as of: <span class="font-bold"><%= @current_timestamp %></span>
 
       <.form for={@form} phx-change="update_as_of_timestamp" class="space-y-4">
         <.input type="range" name="slider" min="1" max={length(@transactions)} value={@index + 1} />
@@ -55,6 +54,7 @@ defmodule ElixirXtdbWeb.LightLive do
           Populate Database
         </.button>
       </.form>
+      </div>
 
       <.trades_list trades={@trades} />
     </div>
