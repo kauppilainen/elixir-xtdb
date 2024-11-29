@@ -51,9 +51,11 @@ defmodule ElixirXtdbWeb.LightLive do
 
       <.form for={@form} phx-change="update_as_of_timestamp" class="space-y-4">
         <.input type="range" name="slider" min="1" max={length(@transactions)} value={@index} />
-
         <.button phx-click="fetch_state" class="bg-blue-500 hover:bg-blue-700">
           Fetch state
+        </.button>
+        <.button phx-click="populate" class="bg-green-500 hover:bg-green-700">
+          Populate Database
         </.button>
       </.form>
 
@@ -81,13 +83,21 @@ defmodule ElixirXtdbWeb.LightLive do
     trades = XTDB.get_trades(current_timestamp)
     IO.inspect(trades, label: "Current trades")
 
-
     socket =
       socket
       |> assign(:trades, trades)
 
     {:noreply, socket}
   end
+
+  def handle_event("populate", _params, socket) do
+    XTDB.populate()
+
+    # Refresh the trades list after populating
+    socket = assign(socket, :trades, XTDB.get_trades())
+    {:noreply, socket}
+  end
+
   # Add this function to ElixirXtdbWeb.LightLive
   defp get_current_timestamp(transactions, index) when length(transactions) > 0 do
     transactions

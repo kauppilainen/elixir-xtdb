@@ -15,13 +15,13 @@ defmodule XTDB do
 
   def get_trades(timestamp) do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
-         {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT _id, price FROM trades FOR VALID_TIME AS OF $1", [timestamp]) do
+       formatted_timestamp = DateTime.to_string(timestamp),
+       {:ok, %Postgrex.Result{rows: rows}} <-
+         Postgrex.query(pid, "SELECT _id, price FROM trades FOR VALID_TIME AS OF $1", [formatted_timestamp]) do
       Enum.map(rows, fn [id, price] -> %{_id: id, value: price} end)
-    else
-      _ -> []
     end
   end
+
   def get_transaction_history do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
@@ -45,7 +45,6 @@ defmodule XTDB do
     select_query = "SELECT * FROM trades"
     {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
 
-    IO.puts("Trades:")
-    Enum.each(rows, fn [id, price] -> IO.puts("  * #{id}: #{price}") end)
+    rows
   end
 end
