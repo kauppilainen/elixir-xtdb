@@ -75,8 +75,8 @@ defmodule ElixirXtdbWeb.Trades do
           <.button type="button" phx-click="fetch_state">
             Fetch state
           </.button>
-          <.button type="button" phx-click="populate">
-            Populate Database
+          <.button :if={Enum.empty?(@trades)} type="button" phx-click="populate">
+            Populate trades
           </.button>
         </.form>
       </div>
