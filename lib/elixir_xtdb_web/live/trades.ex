@@ -1,4 +1,4 @@
-defmodule ElixirXtdbWeb.LightLive do
+defmodule ElixirXtdbWeb.Trades do
   use ElixirXtdbWeb, :live_view
 
   def mount(_params, _session, socket) do

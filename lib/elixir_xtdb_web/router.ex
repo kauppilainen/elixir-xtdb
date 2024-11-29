@@ -18,7 +18,7 @@ defmodule ElixirXtdbWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    live "/light", LightLive
+    live "/trades", Trades
   end
 
   # Other scopes may use custom stacks.
