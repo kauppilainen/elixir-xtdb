@@ -8,16 +8,24 @@ defmodule XTDB do
   def get_trades() do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT _id, price FROM trades", []) do
-      Enum.map(rows, fn [id, price] -> %{_id: id, value: price} end)
+           Postgrex.query(pid, "SELECT _id, price, _valid_from FROM trades", []) do
+      Enum.map(rows, fn [id, price, valid_from] ->
+        %{_id: id, value: price, valid_from: valid_from}
+      end)
     end
   end
 
   def get_trades(timestamp) do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT _id, price FROM trades FOR VALID_TIME AS OF TIMESTAMP '#{timestamp}'", []) do
-      Enum.map(rows, fn [id, price] -> %{_id: id, value: price} end)
+           Postgrex.query(
+             pid,
+             "SELECT _id, price, _valid_from FROM trades FOR VALID_TIME AS OF TIMESTAMP '#{timestamp}'",
+             []
+           ) do
+      Enum.map(rows, fn [id, price, valid_from] ->
+        %{_id: id, value: price, valid_from: valid_from}
+      end)
     end
   end
 
@@ -36,8 +44,10 @@ defmodule XTDB do
 
     Enum.each(trades, fn {id, price} ->
       {:ok, _} = Postgrex.query(pid, "BEGIN", [])
+
       {:ok, _} =
         Postgrex.query(pid, "INSERT INTO trades (_id, price) VALUES (#{id}, #{price})", [])
+
       {:ok, _} = Postgrex.query(pid, "COMMIT", [])
     end)
 

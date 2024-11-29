@@ -21,6 +21,7 @@ defmodule ElixirXtdbWeb.LightLive do
     <div class="flex items-center gap-2">
       <span class="font-medium"><%= @trade._id %>:</span>
       <span><%= @trade.value %></span>
+      <span><%= @trade.valid_from %></span>
     </div>
     """
   end
