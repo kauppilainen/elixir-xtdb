@@ -23,7 +23,7 @@ defmodule ElixirXtdbWeb.LightLive do
     <div>
       <h2 class="text-xl font-semibold">Trades</h2>
       <div class="space-y-2">
-        <.trade :for={trade <- @trades} trade={trade} />
+        <.trade :for={trade <- Enum.sort_by(@trades, & &1._id)} trade={trade} />
       </div>
     </div>
     """
@@ -98,7 +98,6 @@ defmodule ElixirXtdbWeb.LightLive do
     {:noreply, socket}
   end
 
-  # Add this function to ElixirXtdbWeb.LightLive
   defp get_current_timestamp(transactions, index) when length(transactions) > 0 do
     transactions
     |> Enum.at(index - 1)
