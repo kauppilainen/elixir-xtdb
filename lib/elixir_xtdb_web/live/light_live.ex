@@ -43,7 +43,7 @@ defmodule ElixirXtdbWeb.LightLive do
       <h1 class="text-xl font-semibold">Timeline</h1>
 
       <div class="text-sm text-gray-600">
-        Current timestamp: <%= @current_timestamp %>
+        Trades as of: <%= @current_timestamp %>
       </div>
 
       <.form for={@form} phx-change="update_as_of_timestamp" class="space-y-4">
