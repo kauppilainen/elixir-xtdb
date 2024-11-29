@@ -51,7 +51,7 @@ defmodule ElixirXtdbWeb.LightLive do
         <.button type="button" phx-click="fetch_state">
           Fetch state
         </.button>
-        <.button phx-click="populate">
+        <.button type="button" phx-click="populate">
           Populate Database
         </.button>
       </.form>
