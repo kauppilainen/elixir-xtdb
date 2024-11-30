@@ -133,7 +133,7 @@ defmodule ElixirXtdbWeb.Trades do
         %{"trade_id" => id, "price" => price, "valid_from" => valid_from},
         socket
       ) do
-    XTDB.update_trade(String.to_integer(id), String.to_integer(price), valid_from)
+    XTDB.update_trade(String.to_integer(id), String.to_integer(price), to_iso8601_string(valid_from))
 
     socket =
       socket
@@ -160,4 +160,10 @@ defmodule ElixirXtdbWeb.Trades do
   end
 
   defp get_current_timestamp(_, _), do: nil
+
+  def to_iso8601_string(datetime_string) do
+    {:ok, naive_dt} = NaiveDateTime.from_iso8601(datetime_string <> ":00.000")
+    {:ok, dt} = DateTime.from_naive(naive_dt, "Etc/UTC")
+    DateTime.to_iso8601(dt)
+  end
 end

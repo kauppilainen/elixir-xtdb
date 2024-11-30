@@ -59,16 +59,11 @@ defmodule XTDB do
 
   def update_trade(id, price, valid_from) do
     with {:ok, pid} <- Postgrex.start_link(@db_opts) do
-      {:ok, _} = Postgrex.query(pid, "BEGIN", [])
-
-      {:ok, _} =
-        Postgrex.query(
-          pid,
-          "UPDATE trades SET price = $1, _valid_from = $2 WHERE _id = $3",
-          [price, valid_from, id]
-        )
-
-      {:ok, _} = Postgrex.query(pid, "COMMIT", [])
+      {:ok, _} = Postgrex.query(
+        pid,
+        "INSERT INTO trades (_id, price, _valid_from) VALUES (#{id}, #{price}, TIMESTAMP '#{valid_from}')",
+        []
+      )
     end
   end
 end
