@@ -42,7 +42,7 @@ defmodule XTDB do
   def get_transaction_history do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT system_time FROM xt.txs ORDER BY system_time ASC", []) do
+           Postgrex.query(pid, "SELECT DISTINCT system_time FROM xt.txs ORDER BY system_time ASC", []) do
       rows
     end
   end
