@@ -19,7 +19,7 @@ defmodule XTDB do
          {:ok, %Postgrex.Result{rows: rows}} <-
            Postgrex.query(
              pid,
-             "SELECT _id, symbol, volume, _valid_from FROM trades FOR VALID_TIME AS OF TIMESTAMP '#{timestamp}'",
+             "SELECT _id, symbol, volume, _valid_from FROM trades FOR SYSTEM_TIME AS OF TIMESTAMP '#{timestamp}'",
              []
            ) do
       Enum.map(rows, fn [id, symbol, volume, valid_from] ->
