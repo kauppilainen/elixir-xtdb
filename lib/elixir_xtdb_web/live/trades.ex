@@ -133,7 +133,7 @@ defmodule ElixirXtdbWeb.Trades do
     valid_from_index = socket.assigns.valid_from_index
 
     valid_from_timestamp =
-      Enum.at(socket.assign.all_trade_dates, valid_from_index)
+      Enum.at(socket.assigns.all_trade_dates, valid_from_index)
 
     trades = XTDB.get_trades(valid_from_timestamp, system_from_timestamp)
 
