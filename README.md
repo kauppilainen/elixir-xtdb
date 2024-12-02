@@ -1,5 +1,8 @@
 # ElixirXtdb
 
+This is an example project for Phoenix and XTDB. Once up and running head over to [localhost:4000/trades](localhost:4000/trades) to populate, view and update trades as well as play around with XT's bitemporal indices. 
+This project is based on the [Late Trade adjustments](https://docs.xtdb.com/tutorials/financial-usecase/late-trade.html) example at [docs.xtdb.com](https://docs.xtdb.com)
+
 ## Run locally
 
 To start your Phoenix server:
@@ -18,9 +21,9 @@ To start your Phoenix server:
 * Run `mix ecto.create` to setup Phoenix DB
 * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+You can now visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-## Manually query using `psql`
+### Manually query XTDB using `psql`
 
 ``` sh
 # Connect
