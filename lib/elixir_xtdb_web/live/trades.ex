@@ -156,9 +156,7 @@ defmodule ElixirXtdbWeb.Trades do
 
     socket =
       socket
-      |> assign(:system_from_form, to_form(%{"slider" => value}))
-      |> assign(:system_from_index, system_from_index)
-      |> assign(:system_from_timestamp, system_from_timestamp)
+      |> update_system_time_slider_state(system_from_index,  socket.assigns.transactions)
       |> assign(:trades, trades)
 
     {:noreply, socket}
