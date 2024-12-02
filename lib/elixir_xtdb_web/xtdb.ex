@@ -25,8 +25,7 @@ defmodule XTDB do
            Postgrex.query(
              pid,
              "SELECT _id, symbol, volume, _valid_from
-              FROM trades
-              ORDER BY valid_from",
+              FROM trades",
              []
            ) do
       Enum.map(rows, fn [id, symbol, volume, valid_from] ->
@@ -43,8 +42,7 @@ defmodule XTDB do
              "SELECT _id, symbol, volume, _valid_from
               FROM trades
               FOR VALID_TIME AS OF TIMESTAMP '#{valid_from}'
-              FOR SYSTEM_TIME AS OF TIMESTAMP '#{system_from}'
-              ORDER BY valid_from ASC",
+              FOR SYSTEM_TIME AS OF TIMESTAMP '#{system_from}'",
              []
            ) do
       Enum.map(rows, fn [id, symbol, volume, valid_from] ->
