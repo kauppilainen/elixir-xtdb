@@ -23,12 +23,16 @@ defmodule XTDB do
     end
   end
 
-  def get_trades(timestamp) do
+  def get_trades(valid_from, system_from) do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
            Postgrex.query(
              pid,
-             "SELECT _id, symbol, volume, _valid_from FROM trades FOR SYSTEM_TIME AS OF TIMESTAMP '#{timestamp}'",
+             "SELECT _id, symbol, volume, _valid_from
+              FROM trades
+              FOR VALID_TIME AS OF TIMESTAMP '#{valid_from}'
+              FOR SYSTEM_TIME AS OF TIMESTAMP '#{system_from}'
+              ORDER BY valid_from ASC",
              []
            ) do
       Enum.map(rows, fn [id, symbol, volume, valid_from] ->
@@ -42,7 +46,8 @@ defmodule XTDB do
       {:ok, _} =
         Postgrex.query(
           pid,
-          "INSERT INTO trades (_id, symbol, volume, _valid_from) VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
+          "INSERT INTO trades (_id, symbol, volume, _valid_from)
+           VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
           []
         )
     end
@@ -50,12 +55,18 @@ defmodule XTDB do
 
   def insert_trades_at(pid, trades, system_time) do
     Enum.each(trades, fn {id, symbol, volume, valid_from} ->
-      {:ok, _} = Postgrex.query(pid, "START TRANSACTION READ WRITE, AT SYSTEM_TIME TIMESTAMP '#{system_time}'", [])
+      {:ok, _} =
+        Postgrex.query(
+          pid,
+          "START TRANSACTION READ WRITE, AT SYSTEM_TIME TIMESTAMP '#{system_time}'",
+          []
+        )
 
       {:ok, _} =
         Postgrex.query(
           pid,
-          "INSERT INTO trades (_id, symbol, volume, _valid_from) VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
+          "INSERT INTO trades (_id, symbol, volume, _valid_from)
+           VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
           []
         )
 
