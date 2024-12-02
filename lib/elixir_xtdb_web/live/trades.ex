@@ -207,11 +207,15 @@ defmodule ElixirXtdbWeb.Trades do
       to_iso8601_string(valid_from)
     )
 
+    trades = XTDB.get_trades()
+    all_trade_dates = get_unique_trade_dates(trades)
+
     socket =
       socket
       |> assign(:trades, XTDB.get_trades())
       |> assign(:show_edit_modal, false)
       |> assign(:editing_trade, nil)
+      |> assign(:all_trade_dates, all_trade_dates)
 
     {:noreply, socket}
   end
