@@ -22,7 +22,13 @@ defmodule XTDB do
   def get_trades() do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT _id, symbol, volume, _valid_from FROM trades", []) do
+           Postgrex.query(
+             pid,
+             "SELECT _id, symbol, volume, _valid_from
+              FROM trades
+              ORDER BY valid_from",
+             []
+           ) do
       Enum.map(rows, fn [id, symbol, volume, valid_from] ->
         %{_id: id, symbol: symbol, volume: volume, valid_from: valid_from}
       end)
