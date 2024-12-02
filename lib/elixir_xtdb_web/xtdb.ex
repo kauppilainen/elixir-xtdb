@@ -4,6 +4,15 @@ defmodule XTDB do
     port: 5432,
     database: "xtdb"
   ]
+
+  def get_transaction_history do
+    with {:ok, pid} <- Postgrex.start_link(@db_opts),
+         {:ok, %Postgrex.Result{rows: rows}} <-
+           Postgrex.query(pid, "SELECT DISTINCT system_time FROM xt.txs ORDER BY system_time ASC", []) do
+      rows
+    end
+  end
+
   def get_trades() do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
@@ -36,14 +45,6 @@ defmodule XTDB do
           "INSERT INTO trades (_id, symbol, volume, _valid_from) VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
           []
         )
-    end
-  end
-
-  def get_transaction_history do
-    with {:ok, pid} <- Postgrex.start_link(@db_opts),
-         {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT DISTINCT system_time FROM xt.txs ORDER BY system_time ASC", []) do
-      rows
     end
   end
 
