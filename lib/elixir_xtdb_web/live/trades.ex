@@ -237,8 +237,7 @@ defmodule ElixirXtdbWeb.Trades do
   end
 
   def handle_event("close_modal", _params, socket) do
-    socket = assign(socket, :show_edit_modal, false)
-    {:noreply, socket}
+    {:noreply, close_modal(socket)}
   end
 
   def to_iso8601_string(datetime_string) do
