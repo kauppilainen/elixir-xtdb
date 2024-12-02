@@ -87,7 +87,7 @@ defmodule ElixirXtdbWeb.Trades do
   def slider(assigns) do
     ~H"""
     <div class="text-sm text-gray-600">
-      Trades as of <code class="font-bold"><%= @type %></code>:
+      <code class="font-bold"><%= @type %></code>:
       <span class="font-bold"><%= @current_timestamp %></span>
       <.form for={@form} phx-change={@event} class="space-y-4">
         <.input type="range" name="slider" min="1" max={@max} value={@value} phx-debounce="500" />
@@ -118,7 +118,7 @@ defmodule ElixirXtdbWeb.Trades do
       </.modal>
 
       <.slider
-        type="system time"
+        type="System time"
         event="update_system_from"
         form={@system_from_form}
         current_timestamp={@system_from_timestamp}
@@ -127,7 +127,7 @@ defmodule ElixirXtdbWeb.Trades do
       />
 
       <.slider
-        type="valid time"
+        type="Valid time"
         event="update_valid_from"
         form={@valid_from_form}
         current_timestamp={@valid_from_timestamp}
