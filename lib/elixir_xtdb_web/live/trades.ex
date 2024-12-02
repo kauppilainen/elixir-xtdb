@@ -48,6 +48,18 @@ defmodule ElixirXtdbWeb.Trades do
     """
   end
 
+  def slider(assigns) do
+    ~H"""
+    <div class="text-sm text-gray-600">
+      Trades as of <code class="font-bold"><%= @type %></code>:
+      <span class="font-bold"><%= @current_timestamp %></span>
+      <.form for={@form} phx-change="update_system_from" class="space-y-4">
+        <.input type="range" name="slider" min="1" max={@max} value={@value} phx-debounce="500" />
+      </.form>
+    </div>
+    """
+  end
+
   def render(assigns) do
     ~H"""
     <div class="space-y-6">
@@ -68,30 +80,24 @@ defmodule ElixirXtdbWeb.Trades do
           </div>
         </.form>
       </.modal>
-      <div class="text-sm text-gray-600">
-        Trades as of: <span class="font-bold"><%= @current_timestamp %></span>
+      <.slider
+        type="system time"
+        form={@form}
+        current_timestamp={@current_timestamp}
+        max={length(@transactions)}
+        value={@index + 1}
+      />
 
-        <.form for={@form} phx-change="update_system_time" class="space-y-4">
-          <.input
-            type="range"
-            name="slider"
-            min="1"
-            max={length(@transactions)}
-            value={@index + 1}
-            phx-debounce="500"
-          />
-          <.button :if={Enum.empty?(@trades)} type="button" phx-click="populate">
-            Populate trades
-          </.button>
-        </.form>
-      </div>
+      <.button :if={Enum.empty?(@trades)} type="button" phx-click="populate">
+        Populate trades
+      </.button>
 
       <.trades_list trades={@trades} />
     </div>
     """
   end
 
-  def handle_event("update_system_time", %{"slider" => value}, socket) do
+  def handle_event("update_system_from", %{"slider" => value}, socket) do
     index = String.to_integer(value) - 1
     transactions = socket.assigns.transactions
     current_timestamp = get_current_timestamp(transactions, index)
