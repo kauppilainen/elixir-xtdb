@@ -15,7 +15,6 @@ defmodule ElixirXtdbWeb.Trades do
       |> close_modal()
       |> update_system_time_slider_state(system_from_index, transactions)
       |> update_valid_time_slider_state(valid_from_index, all_trade_dates)
-      |> assign(:all_trade_dates, all_trade_dates)
       |> assign(:transactions, transactions)
       |> assign(:trades, all_trades)
 
@@ -40,6 +39,7 @@ defmodule ElixirXtdbWeb.Trades do
     |> assign(:system_from_index, index)
     |> assign(:system_from_timestamp, Enum.at(transactions, index))
     |> assign(:system_from_form, to_form(%{"slider" => index + 1}))
+    |> assign(:transactions, transactions)
   end
 
   def update_valid_time_slider_state(socket, index, tradeDates) do
@@ -47,6 +47,7 @@ defmodule ElixirXtdbWeb.Trades do
     |> assign(:valid_from_index, index)
     |> assign(:valid_from_timestamp, Enum.at(tradeDates, index))
     |> assign(:valid_from_form, to_form(%{"slider" => index + 1}))
+    |> assign(:all_trade_dates, tradeDates)
   end
 
   def get_unique_trade_dates(trades) do
@@ -178,20 +179,22 @@ defmodule ElixirXtdbWeb.Trades do
     socket =
       socket
       |> update_valid_time_slider_state(valid_from_index, all_trade_dates)
-      |> assign(:all_trade_dates, all_trade_dates)
       |> assign(:trades, trades)
 
     {:noreply, socket}
   end
 
   def handle_event("populate", _params, socket) do
-    trades = XTDB.populate()
+    all_trades = XTDB.populate()
+    all_trade_dates = get_unique_trade_dates(all_trades)
     transactions = XTDB.get_transaction_history()
 
     socket =
       socket
+      |> update_system_time_slider_state(length(transactions) - 1, transactions)
+      |> update_valid_time_slider_state(length(all_trade_dates) - 1, all_trade_dates)
       |> assign(:transactions, transactions)
-      |> assign(:trades, trades)
+      |> assign(:trades, all_trades)
 
     {:noreply, socket}
   end
