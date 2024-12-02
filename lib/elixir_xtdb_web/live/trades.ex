@@ -14,22 +14,41 @@ defmodule ElixirXtdbWeb.Trades do
 
     socket =
       socket
-      |> assign(:show_edit_modal, false)
-      |> assign(:editing_trade, nil)
-      # system from
-      |> assign(:system_from_index, system_from_index)
-      |> assign(:system_from_timestamp, Enum.at(transactions, system_from_index))
-      |> assign(:system_from_form, to_form(%{"slider" => system_from_index + 1}))
-      # valid from
-      |> assign(:valid_from_index, valid_from_index)
-      |> assign(:valid_from_timestamp, Enum.at(tradeDates, valid_from_index))
-      |> assign(:valid_from_form, to_form(%{"slider" => valid_from_index + 1}))
+      |> close_modal()
+      |> update_system_time_slider_state(system_from_index, transactions)
+      |> update_valid_time_slider_state(valid_from_index, tradeDates)
       |> assign(:all_trade_dates, tradeDates)
       |> assign(:transactions, transactions)
       |> assign(:trades, trades)
 
-
     {:ok, socket}
+  end
+
+  def close_modal(socket) do
+    socket
+    |> assign(:show_edit_modal, false)
+    |> assign(:editing_trade, nil)
+  end
+
+  def open_modal(socket, trade) do
+    socket
+    |> assign(:show_edit_modal, true)
+    |> assign(:editing_trade, trade)
+  end
+
+
+  def update_system_time_slider_state(socket, index, transactions) do
+    socket
+    |> assign(:system_from_index, index)
+    |> assign(:system_from_timestamp, Enum.at(transactions, index))
+    |> assign(:system_from_form, to_form(%{"slider" => index + 1}))
+  end
+
+  def update_valid_time_slider_state(socket, index, tradeDates) do
+    socket
+    |> assign(:valid_from_index, index)
+    |> assign(:valid_from_timestamp, Enum.at(tradeDates, index))
+    |> assign(:valid_from_form, to_form(%{"slider" => index + 1}))
   end
 
   def get_unique_trade_dates(trades) do
@@ -151,6 +170,7 @@ defmodule ElixirXtdbWeb.Trades do
     all_trades = XTDB.get_trades()
     all_trade_dates = get_unique_trade_dates(all_trades)
     valid_from_index = String.to_integer(value) - 1
+
     valid_from_timestamp =
       Enum.at(all_trade_dates, valid_from_index)
 
@@ -158,7 +178,6 @@ defmodule ElixirXtdbWeb.Trades do
     system_from_timestamp = Enum.at(socket.assigns.transactions, system_from_index)
 
     trades = XTDB.get_trades(valid_from_timestamp, system_from_timestamp)
-
 
     socket =
       socket
@@ -186,11 +205,7 @@ defmodule ElixirXtdbWeb.Trades do
 
   def handle_event("edit_trade", %{"id" => id}, socket) do
     trade = Enum.find(socket.assigns.trades, &(&1._id == String.to_integer(id)))
-
-    socket =
-      socket
-      |> assign(:editing_trade, trade)
-      |> assign(:show_edit_modal, true)
+    socket = open_modal(socket, trade)
 
     {:noreply, socket}
   end
@@ -209,13 +224,14 @@ defmodule ElixirXtdbWeb.Trades do
 
     trades = XTDB.get_trades()
     all_trade_dates = get_unique_trade_dates(trades)
+    transactions = XTDB.get_transaction_history()
 
     socket =
       socket
-      |> assign(:trades, XTDB.get_trades())
-      |> assign(:show_edit_modal, false)
-      |> assign(:editing_trade, nil)
+      |> close_modal()
       |> assign(:all_trade_dates, all_trade_dates)
+      |> assign(:transactions, transactions)
+      |> assign(:trades, XTDB.get_trades())
 
     {:noreply, socket}
   end
