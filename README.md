@@ -1,4 +1,4 @@
-# ElixirXtdb
+# Elixir+XTDB
 
 This is an example project for Phoenix and XTDB. Once up and running head over to [localhost:4000/trades](localhost:4000/trades) to populate, view and update trades as well as play around with XT's bitemporal indices. 
 This project is based on the [Late Trade adjustments](https://docs.xtdb.com/tutorials/financial-usecase/late-trade.html) example at [docs.xtdb.com](https://docs.xtdb.com)
