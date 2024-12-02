@@ -4,15 +4,15 @@
 
 To start your Phoenix server:
 
-* Start XTDB and Phoenix Postgres instance 
+* Start Phoenix Postgres and XTDB instance 
 
-```sh
-# Phoenix internal DB
-docker run -it --name phoenix-liveview --replace --pull=always -p 5433:5432 -e POSTGRES_PASSWORD=postgres -d postgres
+  ```sh
+  # Phoenix internal DB
+  docker run -it --name phoenix-liveview --replace --pull=always -p 5433:5432 -e POSTGRES_PASSWORD=postgres -d postgres
 
-# XTDB
-docker run -it --rm --name phoenix-liveview-xtdb --pull=always -p 6543:3000 -p 5432:5432 ghcr.io/xtdb/xtdb
-```
+  # XTDB
+  docker run -it --rm --name phoenix-liveview-xtdb --pull=always -p 6543:3000 -p 5432:5432 ghcr.io/xtdb/xtdb
+  ```
 
 * Run `mix setup` to install and setup dependencies
 * Run `mix ecto.create` to setup Phoenix DB
