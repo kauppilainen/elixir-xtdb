@@ -3,19 +3,37 @@ defmodule ElixirXtdbWeb.Trades do
 
   def mount(_params, _session, socket) do
     transactions = XTDB.get_transaction_history()
-    index = length(transactions) - 1
+    IO.inspect(transactions, label: "transactions")
+    system_from_index = length(transactions) - 1
+
+    trades = XTDB.get_trades()
+    IO.inspect(trades, label: "trades")
+    tradeDates = get_unique_trade_dates(trades)
+    IO.inspect(tradeDates, label: "tradeDates")
+    valid_from_index = length(tradeDates) - 1
 
     socket =
       socket
       |> assign(:show_edit_modal, false)
       |> assign(:editing_trade, nil)
-      |> assign(:index, index)
-      |> assign(:current_timestamp, get_current_timestamp(transactions, index))
+      # system from
+      |> assign(:system_from_index, system_from_index)
+      |> assign(:system_from_timestamp, Enum.at(transactions, system_from_index))
+      |> assign(:system_from_form, to_form(%{"slider" => system_from_index + 1}))
+      # valid from
+      |> assign(:valid_from_index, valid_from_index)
+      |> assign(:valid_from_timestamp, Enum.at(tradeDates, valid_from_index))
+      |> assign(:valid_from_form, to_form(%{"slider" => valid_from_index + 1}))
+      |> assign(:all_trade_dates, tradeDates)
       |> assign(:transactions, transactions)
-      |> assign(:trades, XTDB.get_trades())
-      |> assign(:form, to_form(%{"slider" => index}))
+      |> assign(:trades, trades)
+
 
     {:ok, socket}
+  end
+
+  def get_unique_trade_dates(trades) do
+    trades |> Enum.map(& &1.valid_from) |> Enum.uniq() |> Enum.sort()
   end
 
   attr :trade, :map, required: true
@@ -53,7 +71,7 @@ defmodule ElixirXtdbWeb.Trades do
     <div class="text-sm text-gray-600">
       Trades as of <code class="font-bold"><%= @type %></code>:
       <span class="font-bold"><%= @current_timestamp %></span>
-      <.form for={@form} phx-change="update_system_from" class="space-y-4">
+      <.form for={@form} phx-change={@event} class="space-y-4">
         <.input type="range" name="slider" min="1" max={@max} value={@value} phx-debounce="500" />
       </.form>
     </div>
@@ -80,12 +98,23 @@ defmodule ElixirXtdbWeb.Trades do
           </div>
         </.form>
       </.modal>
+
       <.slider
         type="system time"
-        form={@form}
-        current_timestamp={@current_timestamp}
+        event="update_system_from"
+        form={@system_from_form}
+        current_timestamp={@system_from_timestamp}
         max={length(@transactions)}
-        value={@index + 1}
+        value={@system_from_index + 1}
+      />
+
+      <.slider
+        type="valid time"
+        event="update_valid_from"
+        form={@valid_from_form}
+        current_timestamp={@valid_from_timestamp}
+        max={length(@all_trade_dates)}
+        value={@valid_from_index + 1}
       />
 
       <.button :if={Enum.empty?(@trades)} type="button" phx-click="populate">
@@ -98,19 +127,46 @@ defmodule ElixirXtdbWeb.Trades do
   end
 
   def handle_event("update_system_from", %{"slider" => value}, socket) do
-    index = String.to_integer(value) - 1
-    transactions = socket.assigns.transactions
-    current_timestamp = get_current_timestamp(transactions, index)
+    system_from_index = String.to_integer(value) - 1
+    system_from_timestamp = Enum.at(socket.assigns.transactions, system_from_index)
 
-    trades = XTDB.get_trades(current_timestamp)
-    IO.inspect(trades, label: "Current trades")
+    valid_from_index = socket.assigns.valid_from_index
+
+    valid_from_timestamp =
+      Enum.at(socket.assign.all_trade_dates, valid_from_index)
+
+    trades = XTDB.get_trades(valid_from_timestamp, system_from_timestamp)
 
     socket =
       socket
-      |> assign(:form, to_form(%{"slider" => value}))
-      |> assign(:index, index)
+      |> assign(:system_from_form, to_form(%{"slider" => value}))
+      |> assign(:system_from_index, system_from_index)
+      |> assign(:system_from_timestamp, system_from_timestamp)
       |> assign(:trades, trades)
-      |> assign(:current_timestamp, current_timestamp)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("update_valid_from", %{"slider" => value}, socket) do
+    all_trades = XTDB.get_trades()
+    all_trade_dates = get_unique_trade_dates(all_trades)
+    valid_from_index = String.to_integer(value) - 1
+    valid_from_timestamp =
+      Enum.at(all_trade_dates, valid_from_index)
+
+    system_from_index = socket.assigns.system_from_index
+    system_from_timestamp = Enum.at(socket.assigns.transactions, system_from_index)
+
+    trades = XTDB.get_trades(valid_from_timestamp, system_from_timestamp)
+
+
+    socket =
+      socket
+      |> assign(:valid_from_form, to_form(%{"slider" => value}))
+      |> assign(:valid_from_index, valid_from_index)
+      |> assign(:valid_from_timestamp, valid_from_timestamp)
+      |> assign(:all_trade_dates, all_trade_dates)
+      |> assign(:trades, trades)
 
     {:noreply, socket}
   end
@@ -164,18 +220,6 @@ defmodule ElixirXtdbWeb.Trades do
     socket = assign(socket, :show_edit_modal, false)
     {:noreply, socket}
   end
-
-  defp get_current_timestamp(transactions, index) when length(transactions) > 0 do
-    case Enum.at(transactions, index) do
-      [timestamp | _] when not is_nil(timestamp) ->
-        DateTime.to_iso8601(timestamp)
-
-      _ ->
-        nil
-    end
-  end
-
-  defp get_current_timestamp(_, _), do: nil
 
   def to_iso8601_string(datetime_string) do
     {:ok, naive_dt} = NaiveDateTime.from_iso8601(datetime_string <> ":00.000")
