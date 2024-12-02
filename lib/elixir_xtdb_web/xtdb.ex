@@ -47,24 +47,9 @@ defmodule XTDB do
     end
   end
 
-  def populate do
-    {:ok, pid} = Postgrex.start_link(@db_opts)
-
-    trades = [
-      {1, "BTC", 100, "2024-01-01 00:00:00"},
-      {2, "ETH", 250, "2024-01-01 00:00:00"},
-      {3, "SOL", 500, "2024-01-01 00:00:00"},
-      {4, "DOT", 150, "2024-01-01 00:00:00"},
-      {5, "AVAX", 300, "2024-01-01 00:00:00"},
-      {6, "MATIC", 450, "2024-01-01 00:00:00"},
-      {7, "LINK", 200, "2024-01-01 00:00:00"},
-      {8, "ADA", 350, "2024-01-01 00:00:00"},
-      {9, "XRP", 600, "2024-01-01 00:00:00"},
-      {10, "ATOM", 175, "2024-01-01 00:00:00"}
-    ]
-
+  def insert_trades_at(pid, trades, system_time) do
     Enum.each(trades, fn {id, symbol, volume, valid_from} ->
-      {:ok, _} = Postgrex.query(pid, "BEGIN", [])
+      {:ok, _} = Postgrex.query(pid, "START TRANSACTION READ WRITE, AT SYSTEM_TIME TIMESTAMP '#{system_time}'", [])
 
       {:ok, _} =
         Postgrex.query(
@@ -75,6 +60,34 @@ defmodule XTDB do
 
       {:ok, _} = Postgrex.query(pid, "COMMIT", [])
     end)
+  end
+
+  def populate do
+    {:ok, pid} = Postgrex.start_link(@db_opts)
+
+    # Pre close trades 2024-01-15 16:59:00
+    insert_trades_at(
+      pid,
+      [
+        {1, "XAU:CUR", 150, "2024-01-15 10:00:00"},
+        {2, "NG1:COM", 430, "2024-01-15 11:15:00"},
+        {3, "XAU:CUR", 200, "2024-01-15 12:05:00"}
+      ],
+      "2024-01-15 16:59:00"
+    )
+
+    # Post close trades 2024-01-15 19:00:00
+    insert_trades_at(pid, [{4, "W1:COM", 320, "2024-01-15 16:50:00"}], "2024-01-15 19:00:00")
+
+    # Day after trades 2024-01-16 16:59:00
+    insert_trades_at(
+      pid,
+      [
+        {5, "W1:COM", 100, "2024-01-16 12:10:00"},
+        {6, "W1:COM", 120, "2024-01-16 14:55:00"}
+      ],
+      "2024-01-16 16:59:00"
+    )
 
     select_query = "SELECT * FROM trades"
     {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
