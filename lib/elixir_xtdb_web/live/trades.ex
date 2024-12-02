@@ -178,8 +178,8 @@ defmodule ElixirXtdbWeb.Trades do
     # Refresh the trades list after populating
     socket =
       socket
-      |> assign(:trades, trades)
       |> assign(:transactions, transactions)
+      |> assign(:trades, trades)
 
     {:noreply, socket}
   end

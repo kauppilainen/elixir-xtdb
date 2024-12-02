@@ -113,9 +113,6 @@ defmodule XTDB do
       "2024-01-16 16:59:00"
     )
 
-    select_query = "SELECT * FROM trades"
-    {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
-
-    rows
+    get_trades()
   end
 end
