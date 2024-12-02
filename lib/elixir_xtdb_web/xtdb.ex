@@ -4,13 +4,12 @@ defmodule XTDB do
     port: 5432,
     database: "xtdb"
   ]
-
   def get_trades() do
     with {:ok, pid} <- Postgrex.start_link(@db_opts),
          {:ok, %Postgrex.Result{rows: rows}} <-
-           Postgrex.query(pid, "SELECT _id, price, _valid_from FROM trades", []) do
-      Enum.map(rows, fn [id, price, valid_from] ->
-        %{_id: id, value: price, valid_from: valid_from}
+           Postgrex.query(pid, "SELECT _id, symbol, volume, _valid_from FROM trades", []) do
+      Enum.map(rows, fn [id, symbol, volume, valid_from] ->
+        %{_id: id, symbol: symbol, volume: volume, valid_from: valid_from}
       end)
     end
   end
@@ -20,12 +19,23 @@ defmodule XTDB do
          {:ok, %Postgrex.Result{rows: rows}} <-
            Postgrex.query(
              pid,
-             "SELECT _id, price, _valid_from FROM trades FOR VALID_TIME AS OF TIMESTAMP '#{timestamp}'",
+             "SELECT _id, symbol, volume, _valid_from FROM trades FOR VALID_TIME AS OF TIMESTAMP '#{timestamp}'",
              []
            ) do
-      Enum.map(rows, fn [id, price, valid_from] ->
-        %{_id: id, value: price, valid_from: valid_from}
+      Enum.map(rows, fn [id, symbol, volume, valid_from] ->
+        %{_id: id, symbol: symbol, volume: volume, valid_from: valid_from}
       end)
+    end
+  end
+
+  def update_trade(id, symbol, volume, valid_from) do
+    with {:ok, pid} <- Postgrex.start_link(@db_opts) do
+      {:ok, _} =
+        Postgrex.query(
+          pid,
+          "INSERT INTO trades (_id, symbol, volume, _valid_from) VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
+          []
+        )
     end
   end
 
@@ -40,13 +50,28 @@ defmodule XTDB do
   def populate do
     {:ok, pid} = Postgrex.start_link(@db_opts)
 
-    trades = Enum.map(1..100, fn id -> {id, id * 2} end)
+    trades = [
+      {1, "BTC", 100, "2024-01-01 00:00:00"},
+      {2, "ETH", 250, "2024-01-01 00:00:00"},
+      {3, "SOL", 500, "2024-01-01 00:00:00"},
+      {4, "DOT", 150, "2024-01-01 00:00:00"},
+      {5, "AVAX", 300, "2024-01-01 00:00:00"},
+      {6, "MATIC", 450, "2024-01-01 00:00:00"},
+      {7, "LINK", 200, "2024-01-01 00:00:00"},
+      {8, "ADA", 350, "2024-01-01 00:00:00"},
+      {9, "XRP", 600, "2024-01-01 00:00:00"},
+      {10, "ATOM", 175, "2024-01-01 00:00:00"}
+    ]
 
-    Enum.each(trades, fn {id, price} ->
+    Enum.each(trades, fn {id, symbol, volume, valid_from} ->
       {:ok, _} = Postgrex.query(pid, "BEGIN", [])
 
       {:ok, _} =
-        Postgrex.query(pid, "INSERT INTO trades (_id, price) VALUES (#{id}, #{price})", [])
+        Postgrex.query(
+          pid,
+          "INSERT INTO trades (_id, symbol, volume, _valid_from) VALUES (#{id}, '#{symbol}', #{volume}, TIMESTAMP '#{valid_from}')",
+          []
+        )
 
       {:ok, _} = Postgrex.query(pid, "COMMIT", [])
     end)
@@ -55,15 +80,5 @@ defmodule XTDB do
     {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(pid, select_query, [])
 
     rows
-  end
-
-  def update_trade(id, price, valid_from) do
-    with {:ok, pid} <- Postgrex.start_link(@db_opts) do
-      {:ok, _} = Postgrex.query(
-        pid,
-        "INSERT INTO trades (_id, price, _valid_from) VALUES (#{id}, #{price}, TIMESTAMP '#{valid_from}')",
-        []
-      )
-    end
   end
 end

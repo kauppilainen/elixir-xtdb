@@ -27,9 +27,10 @@ defmodule ElixirXtdbWeb.Trades do
       phx-click="edit_trade"
       phx-value-id={@trade._id}
     >
-      <span class="font-medium"><%= @trade._id %>:</span>
-      <span><%= @trade.value %></span>
-      <span><%= @trade.valid_from %></span>
+      <span class="font-semibold"><%= @trade._id %>:</span>
+      <code><%= @trade.symbol %></code>
+      | <code><%= @trade.volume %></code>
+      | <code><%= @trade.valid_from %></code>
     </div>
     """
   end
@@ -55,7 +56,8 @@ defmodule ElixirXtdbWeb.Trades do
         <.form for={%{}} phx-submit="save_trade">
           <div class="space-y-4">
             <input type="hidden" name="trade_id" value={@editing_trade._id} />
-            <.input type="number" label="Price" name="price" value={@editing_trade.value} />
+            <.input type="text" label="Symbol" name="symbol" value={@editing_trade.symbol} />
+            <.input type="number" label="Volume" name="volume" value={@editing_trade.volume} />
             <.input
               type="datetime-local"
               label="Valid From"
@@ -66,7 +68,6 @@ defmodule ElixirXtdbWeb.Trades do
           </div>
         </.form>
       </.modal>
-
       <div class="text-sm text-gray-600">
         Trades as of: <span class="font-bold"><%= @current_timestamp %></span>
 
@@ -130,10 +131,15 @@ defmodule ElixirXtdbWeb.Trades do
 
   def handle_event(
         "save_trade",
-        %{"trade_id" => id, "price" => price, "valid_from" => valid_from},
+        %{"trade_id" => id, "symbol" => symbol, "volume" => volume, "valid_from" => valid_from},
         socket
       ) do
-    XTDB.update_trade(String.to_integer(id), String.to_integer(price), to_iso8601_string(valid_from))
+    XTDB.update_trade(
+      String.to_integer(id),
+      symbol,
+      String.to_integer(volume),
+      to_iso8601_string(valid_from)
+    )
 
     socket =
       socket
