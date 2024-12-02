@@ -110,10 +110,15 @@ defmodule ElixirXtdbWeb.Trades do
   end
 
   def handle_event("populate", _params, socket) do
-    XTDB.populate()
+    trades = XTDB.populate()
+    transactions = XTDB.get_transaction_history()
 
     # Refresh the trades list after populating
-    socket = assign(socket, :trades, XTDB.get_trades())
+    socket =
+      socket
+      |> assign(:trades, trades)
+      |> assign(:transactions, transactions)
+
     {:noreply, socket}
   end
 
