@@ -229,9 +229,8 @@ defmodule ElixirXtdbWeb.Trades do
     socket =
       socket
       |> close_modal()
-      |> assign(:all_trade_dates, all_trade_dates)
       |> assign(:transactions, transactions)
-      |> assign(:trades, XTDB.get_trades())
+      |> assign(:all_trade_dates, all_trade_dates)
 
     {:noreply, socket}
   end
