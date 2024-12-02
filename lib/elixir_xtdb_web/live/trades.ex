@@ -71,11 +71,15 @@ defmodule ElixirXtdbWeb.Trades do
       <div class="text-sm text-gray-600">
         Trades as of: <span class="font-bold"><%= @current_timestamp %></span>
 
-        <.form for={@form} phx-change="update_as_of_timestamp" class="space-y-4">
-          <.input type="range" name="slider" min="1" max={length(@transactions)} value={@index + 1} />
-          <.button type="button" phx-click="fetch_state">
-            Fetch state
-          </.button>
+        <.form for={@form} phx-change="update_system_time" class="space-y-4">
+          <.input
+            type="range"
+            name="slider"
+            min="1"
+            max={length(@transactions)}
+            value={@index + 1}
+            phx-debounce="500"
+          />
           <.button :if={Enum.empty?(@trades)} type="button" phx-click="populate">
             Populate trades
           </.button>
@@ -87,25 +91,20 @@ defmodule ElixirXtdbWeb.Trades do
     """
   end
 
-  def handle_event("update_as_of_timestamp", %{"slider" => value}, socket) do
+  def handle_event("update_system_time", %{"slider" => value}, socket) do
     index = String.to_integer(value) - 1
     transactions = socket.assigns.transactions
+    current_timestamp = get_current_timestamp(transactions, index)
+
+    trades = XTDB.get_trades(current_timestamp)
+    IO.inspect(trades, label: "Current trades")
 
     socket =
       socket
       |> assign(:form, to_form(%{"slider" => value}))
       |> assign(:index, index)
-      |> assign(:current_timestamp, get_current_timestamp(transactions, index))
-
-    {:noreply, socket}
-  end
-
-  def handle_event("fetch_state", _params, socket) do
-    IO.puts(socket.assigns.current_timestamp)
-    trades = XTDB.get_trades(socket.assigns.current_timestamp)
-    IO.inspect(trades, label: "Current trades")
-
-    socket = assign(socket, :trades, trades)
+      |> assign(:trades, trades)
+      |> assign(:current_timestamp, current_timestamp)
 
     {:noreply, socket}
   end
