@@ -6,20 +6,18 @@ defmodule ElixirXtdbWeb.Trades do
     IO.inspect(transactions, label: "transactions")
     system_from_index = length(transactions) - 1
 
-    trades = XTDB.get_trades()
-    IO.inspect(trades, label: "trades")
-    tradeDates = get_unique_trade_dates(trades)
-    IO.inspect(tradeDates, label: "tradeDates")
-    valid_from_index = length(tradeDates) - 1
+    all_trades = XTDB.get_trades()
+    all_trade_dates = get_unique_trade_dates(all_trades)
+    valid_from_index = length(all_trade_dates) - 1
 
     socket =
       socket
       |> close_modal()
       |> update_system_time_slider_state(system_from_index, transactions)
-      |> update_valid_time_slider_state(valid_from_index, tradeDates)
-      |> assign(:all_trade_dates, tradeDates)
+      |> update_valid_time_slider_state(valid_from_index, all_trade_dates)
+      |> assign(:all_trade_dates, all_trade_dates)
       |> assign(:transactions, transactions)
-      |> assign(:trades, trades)
+      |> assign(:trades, all_trades)
 
     {:ok, socket}
   end
@@ -181,9 +179,7 @@ defmodule ElixirXtdbWeb.Trades do
 
     socket =
       socket
-      |> assign(:valid_from_form, to_form(%{"slider" => value}))
-      |> assign(:valid_from_index, valid_from_index)
-      |> assign(:valid_from_timestamp, valid_from_timestamp)
+      |> update_valid_time_slider_state(valid_from_index, all_trade_dates)
       |> assign(:all_trade_dates, all_trade_dates)
       |> assign(:trades, trades)
 
@@ -194,7 +190,6 @@ defmodule ElixirXtdbWeb.Trades do
     trades = XTDB.populate()
     transactions = XTDB.get_transaction_history()
 
-    # Refresh the trades list after populating
     socket =
       socket
       |> assign(:transactions, transactions)
@@ -222,8 +217,8 @@ defmodule ElixirXtdbWeb.Trades do
       to_iso8601_string(valid_from)
     )
 
-    trades = XTDB.get_trades()
-    all_trade_dates = get_unique_trade_dates(trades)
+    all_trades = XTDB.get_trades()
+    all_trade_dates = get_unique_trade_dates(all_trades)
     transactions = XTDB.get_transaction_history()
 
     socket =
